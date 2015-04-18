@@ -16,7 +16,7 @@ playground({
     scale: 1,
     smoothing: false,
     create: function(){
-        this.loadImage("title");
+        this.loadImage("title", "shadyguy");
         this.loadAtlas("floor");
 
         for(var k in LEAKYWEEK.SCENARIOS) {
@@ -126,6 +126,45 @@ LEAKYWEEK.drawMap = function(){
                 this.app.layer.stars(entity.x, entity.y, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
                     .drawAtlasFrame(this.app.atlases.entities, entity.f, 0, 0)
                     .restore();
+            }
+        }
+    }
+};
+
+LEAKYWEEK.conversation = {
+    enter: function() {
+        this.image = this.scene.image;
+        this.text = this.scene.text;
+        this.timing = this.scene.timing || 3;
+        this.current = 0;
+        this.shown = 0;
+    },
+    step: function(dt) {
+        this.shown += dt/this.timing;
+        if(this.shown > 1) this.shown = 1;
+        this.currentText = this.text[this.current].slice(0, (this.shown*this.text[this.current].length) | 0);
+    },
+    render: function() {
+        this.app.layer.clear('#333');
+        if(this.scene.screenshot) this.app.layer.drawImage(this.scene.screenshot, 0, 0);
+        this.app.layer.drawImage(this.image, 900-this.image.width, 600-this.image.height)
+            .fillStyle('rgba(0, 0, 0, 0.2)')
+            .fillRect(0, 400, 900, 200)
+            .fillStyle("#f0f0f0")
+            .font("20pt Monospace")
+            .textAlign("left")
+            .wrappedText(this.currentText, 100, 440, 600, 40);
+    },
+    keydown: function(event) {
+        if(event.key === 'space'){
+            if(this.shown === 1){
+                this.shown = 0;
+                this.current++;
+                if(this.text.length === this.current){
+                    this.scene.callback.call(this);
+                }
+            } else{
+                this.shown = 1;
             }
         }
     }
