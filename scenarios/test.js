@@ -1,7 +1,7 @@
-{
+LEAKYWEEK.addScenario({
     "title": "Test",
-    "id": "test",
+    "id": 1,
     "description": "An example scenario",
     "difficulty": "easy",
     "thumbnail": "test"
-}
+});
