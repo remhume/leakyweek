@@ -17,7 +17,7 @@ playground({
     smoothing: false,
     create: function(){
         this.loadImage("title");
-
+        this.loadAtlas("floor");
         LEAKYWEEK.loadScenario("scenarios/test.json");
         LEAKYWEEK.loadScenario("scenarios/example.json");
 
@@ -73,14 +73,35 @@ LEAKYWEEK.title = {
     }
 };
 
-LEAKYWEEK.drawMap() = function(){
+LEAKYWEEK.drawMap = function(){
     var map = this.map;
-    var that = this;
+    var ts = map.tileSize;
+    var tile, entity;
+    for(var i = 0; i < map.floor.length; i++){
+        for(var j = 0; j < map.floor[i].length; j++){
+            tile = map.floor[i][j];
+            this.app.layer.stars(j*ts, i*ts, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
+                .drawAtlasFrame(this.app.atlases.floor, tile.frame, 0, 0)
+                .restore();
+            
+        }
+    }
     
-    map.tiles.forEach(function(tile){
-        
-        that.app.layer.stars(tile.x, tile.y, 0.5, 0.5, tile.rotation * Math.PI / 2, 1) 
-            .drawImage(tile.img, 0, 0)
-            .restore();
-    });
+    for(var i = 0; i < map.objects[i].length; i++){
+        for(var j = 0; j < map.objects[i].length; j++){
+            tile = map.objects[i][j];
+            this.app.layer.stars(j*ts, i*ts, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
+                .drawAtlasFrame(this.app.atlases.objects, tile.frame, 0, 0)
+                .restore();
+            
+        }
+        for(var k = 0; k < map.entities.length; k++){
+            entity = map.entities[k];
+            if(entity.y/ts >= i && entity.y/ts < i+1) {
+                this.app.layer.stars(entity.x, entity.y, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
+                    .drawAtlasFrame(this.app.atlases.entities, entity.frame, 0, 0)
+                    .restore();
+            }
+        }
+    }
 };
