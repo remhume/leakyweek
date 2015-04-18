@@ -50,25 +50,36 @@ LEAKYWEEK.days = {};
 
 LEAKYWEEK.title = {
     enter: function(){
-        
+        this.selection = "";
     },
     render: function(){
         var title = this.app.images.title;
         this.app.layer.clear('#333')
             .drawImage(title, (this.app.width-title.width)/2, 0)
             .textAlign('left')
-            .fillStyle('#eee');
+            .fillStyle("#ff00ff")
+            .fillRect((this.app.width-200)/2, this.app.height-110, 200, 70);
 
         for(var i in LEAKYWEEK.SCENARIOS) {
+            var index = Object.keys(LEAKYWEEK.SCENARIOS).indexOf(i);
+            if(this.selection===i) this.app.layer.fillStyle("#666").fillRect((this.app.width-300)/2-10, 275+index*90, 400, 70);
             var s = LEAKYWEEK.SCENARIOS[i];
             this.app.layer
-                  .drawImage(this.app.images[s.thumbnail], (this.app.width-300)/2, 285+Object.keys(LEAKYWEEK.SCENARIOS).indexOf(i)*90)
+                  .drawImage(this.app.images[s.thumbnail], (this.app.width-300)/2, 285+index*90)
+                  .fillStyle("#f0f0f0")
                   .font("15pt Monospace")
                   .textAlign("left")
-                  .fillStyle("#eee")
-                  .fillText(s.title, (this.app.width-150)/2+60, 300+Object.keys(LEAKYWEEK.SCENARIOS).indexOf(i)*90)
+                  .fillText(s.title, (this.app.width-150)/2+60, 300+index*90)
                   .font("12pt sans")
-                  .fillText(s.description, (this.app.width-150)/2+60, 330+Object.keys(LEAKYWEEK.SCENARIOS).indexOf(i)*90);
+                  .fillText(s.description, (this.app.width-150)/2+60, 330+index*90);
+        }
+    },
+    mousedown: function(data) {
+        if(data.button === 'left') {
+            for(var i in LEAKYWEEK.SCENARIOS) {
+                var index = Object.keys(LEAKYWEEK.SCENARIOS).indexOf(i);
+                if((data.x >= (this.app.width-300)/2-10) && (data.x <= (this.app.width-300)/2+390) && (data.y >= 275+index*90) && (data.y <= 275+index*90+70)) { this.selection = i; console.log("ping"); }
+            }
         }
     }
 };
