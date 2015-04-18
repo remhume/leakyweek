@@ -23,6 +23,8 @@ playground({
     }
 });
 
+LEAKYWEEK.days = {};
+
 LEAKYWEEK.title = {
     enter: function(){
         
@@ -33,3 +35,15 @@ LEAKYWEEK.title = {
             .drawImage(title, (this.app.width-title.width)/2, 0);
     }
 };
+
+LEAKYWEEK.drawMap() = function(){
+    var map = this.map;
+    var that = this;
+    
+    map.tiles.forEach(function(tile){
+        
+        that.app.layer.stars(tile.x, tile.y, 0.5, 0.5, tile.rotation * Math.PI / 2, 1) 
+            .drawImage(tile.img, 0, 0)
+            .restore();
+    });
+});
