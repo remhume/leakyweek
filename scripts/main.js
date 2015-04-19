@@ -156,7 +156,7 @@ LEAKYWEEK.conversation = {
             .wrappedText(this.currentText, 100, 440, 600, 40);
     },
     keydown: function(event) {
-        if(event.key === 'space'){
+        if(event.key === 'space' || event.key === 'enter'){
             if(this.shown === 1){
                 this.shown = 0;
                 this.current++;
