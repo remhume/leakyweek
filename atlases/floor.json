@@ -66,6 +66,13 @@
 			"frame": {"x":288,"y":0,"w":32,"h":32},
 			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 			"sourceSize": {"w":32,"h":32}
+		},
+        
+        {
+			"filename": "floor.png",
+			"frame": {"x":0,"y":32,"w":32,"h":32},
+			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+			"sourceSize": {"w":32,"h":32}
 		}
         ]
 }

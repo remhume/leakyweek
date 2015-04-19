@@ -17,7 +17,7 @@ playground({
     smoothing: false,
     create: function(){
         this.loadImage("title", "shadyguy");
-        this.loadAtlas("floor");
+        this.loadAtlas("floor", "player");
 
         for(var k in LEAKYWEEK.SCENARIOS) {
             this.loadImage(LEAKYWEEK.SCENARIOS[k].thumbnail);
@@ -140,7 +140,7 @@ LEAKYWEEK.conversation = {
 
 LEAKYWEEK.map = {
     enter: function() {
-        this.collisionTextures = [6,8,9];
+        this.collisionTextures = [8,9,10];
         var that = this;
         this.map.entities.forEach(function(entity){
             entity.speed = 0;
@@ -148,12 +148,18 @@ LEAKYWEEK.map = {
             entity.x = entity.startX * that.map.tileSize;
             entity.y = entity.startY * that.map.tileSize;
         });
+        this.offset = {
+            x: 300 - this.map.entities[this.map.me].x,
+            y: 450 - this.map.entities[this.map.me].y
+        }
     },
     step: function(dt) {
         for(var i = 0; i < this.map.entities.length; i++){
             var entity = this.map.entities[i];
             entity.x += Math.sin(entity.direction/2*Math.PI)*entity.speed*entity.maxSpeed*dt;
             entity.y += -1 * Math.cos(entity.direction/2*Math.PI)*entity.speed*entity.maxSpeed*dt;
+            entity.current = entity.speed > 0 ? ((this.app.lifetime % 0.5 / 0.5) * (this.app.atlases[entity.atlas].frames.length/4) | 0) + entity.direction * 4 : 0 + entity.direction * 4;
+            
             var that = this;
             var ts = this.map.tileSize,
                 ex1 = entity.x,
@@ -196,10 +202,16 @@ LEAKYWEEK.map = {
                 }
             });
         }
+        this.offset = {
+            x: 450 - this.map.entities[this.map.me].x,
+            y: 300 - this.map.entities[this.map.me].y
+        }
     },
     render: function() {
         var map = this.map;
         var ts = map.tileSize;
+        var ox = this.offset.x;
+        var oy = this.offset.y;
         var tile, entity;
         this.app.layer.clear('#333');
         if(this.map.background) this.app.layer.drawImage(this.map.background, 0, 0);
@@ -207,7 +219,7 @@ LEAKYWEEK.map = {
             for(var j = 0; j < map.floor[i].length; j++){
                 tile = map.floor[i][j];
                 if(tile.f||tile.f===0){
-                    this.app.layer.stars(j*ts, i*ts, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
+                    this.app.layer.stars(j*ts+ox, i*ts+oy, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
                         .drawAtlasFrame(this.app.atlases.floor, tile.f, 0, 0)
                         .restore();
                 }
@@ -219,7 +231,7 @@ LEAKYWEEK.map = {
             for(var j = 0; j < map.objects[i].length; j++){
                 tile = map.objects[i][j];
                 if(tile.f||tile.f===0){
-                    this.app.layer.stars(j*ts, i*ts, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
+                    this.app.layer.stars(j*ts+ox, i*ts+oy, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
                         .drawAtlasFrame(this.app.atlases.objects, tile.f, 0, 0)
                         .restore();
                 }
@@ -227,8 +239,8 @@ LEAKYWEEK.map = {
         }
         for(var k = 0; k < map.entities.length; k++){
             entity = map.entities[k];
-            this.app.layer.stars(entity.x, entity.y, 0.5, 0.5, (entity.direction||0) * Math.PI/2, 1)
-                .drawAtlasFrame(this.app.atlases.floor, entity.f, 0, 0)
+            this.app.layer.stars(entity.x+ox, entity.y+oy, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
+                .drawAtlasFrame(this.app.atlases[entity.atlas], entity.current, 0, 0)
                 .restore();
         }
     },
