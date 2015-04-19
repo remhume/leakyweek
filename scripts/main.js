@@ -96,44 +96,12 @@ LEAKYWEEK.title = {
 };
 
 LEAKYWEEK.drawMap = function(){
-    var map = this.map;
-    var ts = map.tileSize;
-    var tile, entity;
-    for(var i = 0; i < map.floor.length; i++){
-        for(var j = 0; j < map.floor[i].length; j++){
-            tile = map.floor[i][j];
-            if(tile.f||tile.f===0){
-                this.app.layer.stars(j*ts, i*ts, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
-                    .drawAtlasFrame(this.app.atlases.floor, tile.f, 0, 0)
-                    .restore();
-            }
-            
-        }
-    }
     
-    for(var i = 0; i < map.objects.length; i++){
-        for(var j = 0; j < map.objects[i].length; j++){
-            tile = map.objects[i][j];
-            if(tile.f||tile.f===0){
-                this.app.layer.stars(j*ts, i*ts, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
-                    .drawAtlasFrame(this.app.atlases.objects, tile.f, 0, 0)
-                    .restore();
-            }
-        }
-        for(var k = 0; k < map.entities.length; k++){
-            entity = map.entities[k];
-            if(entity.y/ts >= i && entity.y/ts < i+1) {
-                this.app.layer.stars(entity.x, entity.y, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
-                    .drawAtlasFrame(this.app.atlases.entities, entity.f, 0, 0)
-                    .restore();
-            }
-        }
-    }
 };
 
 LEAKYWEEK.conversation = {
     enter: function() {
-        this.image = this.scene.image;
+        this.image = this.app.images[this.scene.image];
         this.text = this.scene.text;
         this.timing = this.scene.timing || 3;
         this.current = 0;
@@ -167,5 +135,131 @@ LEAKYWEEK.conversation = {
                 this.shown = 1;
             }
         }
+    }
+};
+
+LEAKYWEEK.map = {
+    enter: function() {
+        this.collisionTextures = [6,8,9];
+        var that = this;
+        this.map.entities.forEach(function(entity){
+            entity.speed = 0;
+            entity.direction = 0;
+            entity.x = entity.startX * that.map.tileSize;
+            entity.y = entity.startY * that.map.tileSize;
+        });
+    },
+    step: function(dt) {
+        for(var i = 0; i < this.map.entities.length; i++){
+            var entity = this.map.entities[i];
+            entity.x += Math.sin(entity.direction/2*Math.PI)*entity.speed*entity.maxSpeed*dt;
+            entity.y += -1 * Math.cos(entity.direction/2*Math.PI)*entity.speed*entity.maxSpeed*dt;
+            var that = this;
+            var ts = this.map.tileSize,
+                ex1 = entity.x,
+                ex2 = entity.x+ts,
+                ey1 = entity.y,
+                ey2 = entity.y+ts;
+            var collisions = [];
+            this.map.floor.forEach(function(row, y){
+                row.forEach(function(tile, x){
+                    var tx1 = x*ts,
+                        tx2 = x*ts+ts,
+                        ty1 = y*ts,
+                        ty2 = y*ts+ts;
+                    if (ty1 < ey2 && ty2 > ey1)
+                        if(tx1 < ex2 && tx2 > ex1)
+                            collisions.push({tile: tile, x: x, y: y});
+                });
+            });
+            collisions.forEach(function(collision){
+                if(that.collisionTextures.indexOf(collision.tile.f) === -1){
+                    if(collision.tile.collisionEvent)
+                        collision.tile.collisionEvent.call(that);
+                    return;
+                }
+                
+                //kinda assuming there are no directions in between (oh god please)
+                switch(entity.direction|0){
+                    case 0:
+                        entity.y = collision.y*ts+ts;
+                        break;
+                    case 1:
+                        entity.x = collision.x*ts-ts;
+                        break;
+                    case 2:
+                        entity.y = collision.y*ts-ts;
+                        break;
+                    case 3:
+                        entity.x = collision.x*ts+ts
+                        break;
+                }
+            });
+        }
+    },
+    render: function() {
+        var map = this.map;
+        var ts = map.tileSize;
+        var tile, entity;
+        this.app.layer.clear('#333');
+        if(this.map.background) this.app.layer.drawImage(this.map.background, 0, 0);
+        for(var i = 0; i < map.floor.length; i++){
+            for(var j = 0; j < map.floor[i].length; j++){
+                tile = map.floor[i][j];
+                if(tile.f||tile.f===0){
+                    this.app.layer.stars(j*ts, i*ts, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
+                        .drawAtlasFrame(this.app.atlases.floor, tile.f, 0, 0)
+                        .restore();
+                }
+            
+            }
+        }
+        
+        for(var i = 0; i < map.objects.length; i++){
+            for(var j = 0; j < map.objects[i].length; j++){
+                tile = map.objects[i][j];
+                if(tile.f||tile.f===0){
+                    this.app.layer.stars(j*ts, i*ts, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
+                        .drawAtlasFrame(this.app.atlases.objects, tile.f, 0, 0)
+                        .restore();
+                }
+            }
+        }
+        for(var k = 0; k < map.entities.length; k++){
+            entity = map.entities[k];
+            this.app.layer.stars(entity.x, entity.y, 0.5, 0.5, (entity.direction||0) * Math.PI/2, 1)
+                .drawAtlasFrame(this.app.atlases.floor, entity.f, 0, 0)
+                .restore();
+        }
+    },
+    keydown: function(event){
+        switch(event.key){
+            case "up":
+                this.map.entities[this.map.me].direction = 0;
+                break;
+            case "right":
+                this.map.entities[this.map.me].direction = 1;
+                break;
+            case "down":
+                this.map.entities[this.map.me].direction = 2;
+                break;
+            case "left":
+                this.map.entities[this.map.me].direction = 3;
+                break;
+        }
+        switch(event.key){
+            case "up":
+            case "down":
+            case "left":
+            case "right":
+                this.map.entities[this.map.me].speed = 1
+        }
+    },
+    keyup: function(event){
+        var me = this.map.entities[this.map.me];
+        if(event.key === 'up' && me.direction===0) me.speed = 0;
+        if(event.key === 'right' && me.direction===1) me.speed = 0;
+        if(event.key === 'down' && me.direction===2) me.speed = 0;
+        if(event.key === 'left' && me.direction===3) me.speed = 0;
     }
 };
