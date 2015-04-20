@@ -56,6 +56,48 @@ LEAKYWEEK.addScenario({
             ],
             name: 'Stranger',
             image: 'shadyguy'
+        },
+        "tuesday": {
+            text: [
+                "Very good, Miss Layer! I knew i could count on you!",
+                "For tomorrow i have a task thats probably a lot simpler to you: I want you to find out in which room the IT-Department is",
+                "And tomorrow you'll meet me here again."
+            ],
+            name: 'Stranger',
+            image: 'shadyguy'
+        },
+        "wednesday": {
+            text: [
+                "Great work! Now that we know that, you should go down to the basement after they're away",
+                "Look out for things like written down passwords or similar data"
+            ],
+            name: 'Stranger',
+            image: 'shadyguy'
+        },
+        "thursday": {
+            text: [
+                "Wonderful! With the password we can get database access!",
+                "Here, take this USB-Stick and run the commands i wrote on this paper."
+            ],
+            name: 'Stranger',
+            image: 'shadyguy'
+        },
+        "friday": {
+            text: [
+                "I can't thank you enough.",
+                "You did something amazing, that'll change everyones lifes.",
+                "I'd suggest watching the news the next days"
+            ],
+            name: 'Stranger',
+            image: 'shadyguy'
+        },
+        "sunday": {
+            text: [
+                "Dear P.Layer,",
+                ""
+            ],
+            name: 'Letter',
+            image: 'shadyletter'
         }
     },
     "dayintros": {
@@ -69,23 +111,23 @@ LEAKYWEEK.addScenario({
         },
         "wednesday": {
             title: "-wednesday-",
-            text: ""
+            text: "This really seems like an easy task, you think while eating breakfast. But you sure wonder if the mysterious guy will actually use the data you give him for good."
         },
         "thursday": {
             title: "-thursday-",
-            text: ""
+            text: "dontquestionthestrangerwholetsyoudocriminalstuff. dontquestionthestrangerwholetsyoudocriminalstuff. dontquestionthestrangerwholetsyoudocriminalstuff. dontquestionthestrangerwholetsyoudocriminalstuff."
         },
         "friday": {
             title: "-friday-",
-            text: ""
+            text: "You ignore all the fears you haveof losing your job or helping a criminal. There is no going back now. Let's do this!"
         },
         "saturday": {
             title: "-saturday-",
-            text: ""
+            text: "You really enjoy your free day"
         },
         "sunday": {
             title: "-sunday-",
-            text: ""
+            text: "Oh look! You got mail! On a sunday. Since when does the postman deliver mail on sunday? You shrug and open up the letter…"
         }
     }
 });

@@ -16,7 +16,7 @@ playground({
     scale: 1,
     smoothing: false,
     create: function(){
-        this.loadImage("title", "shadyguy");
+        this.loadImage("title", "shadyguy", "shadyletter");
         this.loadAtlas("floor", "player", "objects");
     },
     ready: function(){
@@ -300,7 +300,7 @@ LEAKYWEEK.map = {
         }
         for(var k = 0; k < map.entities.length; k++){
             entity = map.entities[k];
-            this.app.layer.stars(entity.x+ox, entity.y+oy, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
+            this.app.layer.stars(entity.x+ox, entity.y+oy-10, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
                 .drawAtlasFrame(this.app.atlases[entity.atlas], entity.current, 0, 0)
                 .restore();
         }
