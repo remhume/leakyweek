@@ -18,10 +18,6 @@ playground({
     create: function(){
         this.loadImage("title", "shadyguy");
         this.loadAtlas("floor", "player", "objects");
-
-        //for(var k in LEAKYWEEK.SCENARIOS) {
-        //    this.loadAtlas(LEAKYWEEK.SCENARIOS[k].thumbnail);
-        //}
     },
     ready: function(){
         this.setState(LEAKYWEEK.title);
@@ -129,6 +125,10 @@ LEAKYWEEK.conversation = {
         this.current = 0;
         this.shown = 0;
     },
+    leave: function(){
+        this.image = this.text = '';
+        this.current = this.shown = 0;
+    },
     step: function(dt) {
         this.shown += dt/this.timing;
         if(this.shown > 1) this.shown = 1;
@@ -137,8 +137,8 @@ LEAKYWEEK.conversation = {
     render: function() {
         this.app.layer.clear('#333');
         if(this.scene.screenshot) this.app.layer.drawImage(this.scene.screenshot, 0, 0);
-        this.app.layer.drawImage(this.image, 900-this.image.width, 600-this.image.height)
-            .fillStyle('rgba(0, 0, 0, 0.2)')
+        if(this.scene.image){this.app.layer.drawImage(this.image, 900-this.image.width, 600-this.image.height)}
+        this.app.layer.fillStyle('rgba(0, 0, 0, 0.2)')
             .fillRect(0, 400, 900, 200)
             .fillStyle("#f0f0f0")
             .font("20pt Monospace")
@@ -151,6 +151,7 @@ LEAKYWEEK.conversation = {
                 this.shown = 0;
                 this.current++;
                 if(this.text.length === this.current){
+                    this.leave();
                     this.scene.callback.call(this.scene.parent);
                 }
             } else{
@@ -166,23 +167,31 @@ LEAKYWEEK.map = {
         this.collisionObjects = [1];
         var that = this;
         this.map = this.scene;
+        
         this.map.entities.forEach(function(entity){
             entity.speed = 0;
-            entity.direction = 0;
-            entity.x = entity.startX * that.map.tileSize;
-            entity.y = entity.startY * that.map.tileSize;
+            if(!that.scene.returning){
+                entity.direction = 0;
+                entity.x = entity.startX * that.map.tileSize;
+                entity.y = entity.startY * that.map.tileSize;
+            }
         });
-        this.offset = {
-            x: 300 - this.map.entities[this.map.me].x,
-            y: 450 - this.map.entities[this.map.me].y
+        if(!this.scene.returning){
+            this.offset = {
+                x: 300 - this.map.entities[this.map.me].x,
+                y: 450 - this.map.entities[this.map.me].y
+            }
+            this.mapedit = false;
+            this.konami = {
+                code: ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'],
+                next: 0
+            }
+            this.selectedFrame = 3;
+            this.selectedObject = 0;
+            this.selectedCollisionEvent = -1;
+            this.lastCollisionEvent = -1;
+            this.scene.returning = true;
         }
-        this.mapedit = false;
-        this.konami = {
-            code: ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'],
-            next: 0
-        }
-        this.selectedFrame = 3;
-        this.selectedObject = 0;
     },
     step: function(dt) {
         if(this.konami.next === this.konami.code.length){
@@ -213,11 +222,17 @@ LEAKYWEEK.map = {
                             collisions.push({tile: tile, x: x, y: y});
                 });
             });
+            var collisionEvs = 0;
             collisions.forEach(function(collision){
                 if(that.collisionTextures.indexOf(collision.tile.f) === -1 ||
                    (collision.tile.o && that.collisionObjects.indexOf(collision.tile.o)===-1)){
-                    if(collision.tile.collisionEvent)
-                        collision.tile.collisionEvent.call(that.map.parent);
+                    if(collision.tile.collisionEvent!== undefined && collision.tile.collisionEvent !== -1){
+                        collisionEvs++;
+                        if(collision.tile.collisionEvent !== that.lastCollisionEvent){
+                            that.lastCollisionEvent = collision.tile.collisionEvent;
+                            that.map.collisionEvents[collision.tile.collisionEvent].call(that.map.parent, that);
+                        }
+                    }
                     return;
                 }
                 
@@ -237,6 +252,9 @@ LEAKYWEEK.map = {
                         break;
                 }
             });
+            if(collisionEvs === 0){
+                this.lastCollisionEvent = -1;
+            }
         }
         this.offset = {
             x: 450 - this.map.entities[this.map.me].x,
@@ -268,12 +286,12 @@ LEAKYWEEK.map = {
                             .fillStyle('rgba('+a+','+a+',255,0.2)')
                             .fillRect(0,0,ts,ts);
                     }
-                    if(this.mapedit&&tile.collisionEvent){
+                    if(this.mapedit&&tile.collisionEvent !== undefined && tile.collisionEvent!== -1){
                         this.app.layer
                             .fillStyle('#f0f0f0')
                             .font("10pt Monospace")
                             .textAlign("left")
-                            .fillText('F',0,0);
+                            .fillText('F'+tile.collisionEvent,0,0);
                     }
                     this.app.layer.restore();
                 }
@@ -423,7 +441,7 @@ LEAKYWEEK.map = {
                     tile;
                 if(this.mapedit){
                     this.selectedObject++;
-                    if(this.selectedObject === this.app.atlases.objects.frames.length) this.selectedObject = 0;
+                    if(this.selectedObject === this.app.atlases.objects.frames.length) this.selectedObject = -1;
                     for(var i = 0; i < map.floor.length; i++){
                         for(var j = 0; j < map.floor[i].length; j++){
                             tile = map.floor[i][j];
@@ -439,15 +457,13 @@ LEAKYWEEK.map = {
                 var map = this.map,
                     tile;
                 if(this.mapedit){
+                    this.selectedCollisionEvent++;
+                    if(this.selectedCollisionEvent >= this.map.collisionEvents.length) this.selectedCollisionEvent = -1;
                     for(var i = 0; i < map.floor.length; i++){
                         for(var j = 0; j < map.floor[i].length; j++){
                             tile = map.floor[i][j];
                             if(tile.selected){
-                                if(!tile.collisionEvent){
-                                    tile.collisionEvent = function(){}
-                                } else{
-                                    tile.collisionEvent = undefined;
-                                }
+                                tile.collisionEvent = this.selectedCollisionEvent;
                             }
                         }
                     }
@@ -474,25 +490,19 @@ LEAKYWEEK.map = {
         if(event.key === 'left' && me.direction===3) me.speed = 0;
     },
     export: function(){
-        var tile, collisionEvs = [];
+        var tile;
         for(var i = 0; i < this.map.floor.length; i++){
             for(var j = 0; j < this.map.floor[i].length; j++){
                 tile = this.map.floor[i][j]
                 tile.selected = undefined;
                 if(tile.rotation === 0) tile.rotation = undefined;
                 if(tile.o === 0) tile.o = undefined;
-                if(tile.collisionEvent){
-                    collisionEvs.push(tile);
-                    tile.collisionEvent = 'IM AT ['+i+']['+j+'] PLEASE SET ME PROPERLY UP';
-                }
+                if(tile.collisionEvent === -1) tile.collisionEvent = undefined;
                     
             }
         }
         
         console.log(JSON.stringify(LEAKYWEEK.map.map.floor));
-        collisionEvs.forEach(function(tile){
-            tile.collisionEvent = function(){};
-        });
     }
 };
 
