@@ -268,6 +268,13 @@ LEAKYWEEK.map = {
                             .fillStyle('rgba('+a+','+a+',255,0.2)')
                             .fillRect(0,0,ts,ts);
                     }
+                    if(this.mapedit&&tile.collisionEvent){
+                        this.app.layer
+                            .fillStyle('#f0f0f0')
+                            .font("10pt Monospace")
+                            .textAlign("left")
+                            .fillText('F',0,0);
+                    }
                     this.app.layer.restore();
                 }
             
@@ -288,6 +295,7 @@ LEAKYWEEK.map = {
                         'rclick: change selected tiles to next texture',
                         'wheelclick: rotate the texture of selected tiles',
                         'o: scroll through objects on selected tiles',
+                        'f: add/remove an empty collisionEvent',
                         'period: unselect all textures',
                         'konamicode: leave mapedit mode'];
             this.app.layer
@@ -426,6 +434,24 @@ LEAKYWEEK.map = {
                         }
                     }
                 }
+                break;
+            case "f":
+                var map = this.map,
+                    tile;
+                if(this.mapedit){
+                    for(var i = 0; i < map.floor.length; i++){
+                        for(var j = 0; j < map.floor[i].length; j++){
+                            tile = map.floor[i][j];
+                            if(tile.selected){
+                                if(!tile.collisionEvent){
+                                    tile.collisionEvent = function(){}
+                                } else{
+                                    tile.collisionEvent = undefined;
+                                }
+                            }
+                        }
+                    }
+                }
         }
         switch(event.key){
             case "up":
@@ -448,16 +474,25 @@ LEAKYWEEK.map = {
         if(event.key === 'left' && me.direction===3) me.speed = 0;
     },
     export: function(){
-        if(this.mapedit){
-            for(var i = 0; i < this.map.floor.length; i++){
-                for(var j = 0; j < this.map.floor[i].length; j++){
-                    this.map.floor[i][j].selected = undefined;
-                    if(this.map.floor[i][j].rotation === 0) this.map.floor[i][j].rotation = undefined;
-                    if(this.map.floor[i][j].o === 0) this.map.floor[i][j].o = undefined;
+        var tile, collisionEvs = [];
+        for(var i = 0; i < this.map.floor.length; i++){
+            for(var j = 0; j < this.map.floor[i].length; j++){
+                tile = this.map.floor[i][j]
+                tile.selected = undefined;
+                if(tile.rotation === 0) tile.rotation = undefined;
+                if(tile.o === 0) tile.o = undefined;
+                if(tile.collisionEvent){
+                    collisionEvs.push(tile);
+                    tile.collisionEvent = 'IM AT ['+i+']['+j+'] PLEASE SET ME PROPERLY UP';
                 }
+                    
             }
         }
+        
         console.log(JSON.stringify(LEAKYWEEK.map.map.floor));
+        collisionEvs.forEach(function(tile){
+            tile.collisionEvent = function(){};
+        });
     }
 };
 

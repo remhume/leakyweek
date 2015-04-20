@@ -16,7 +16,7 @@ LEAKYWEEK.day = {
         }
     },
     setup: function(scene, type, callback) {
-        if(type != "map") scene.screenshot = this.app.layer.cache();
+        if(type === "dayintro") scene.screenshot = this.app.layer.cache();
         scene.parent = this;
         scene.init = function(){
             LEAKYWEEK[type].scene = scene;
