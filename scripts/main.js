@@ -164,7 +164,7 @@ LEAKYWEEK.conversation = {
 LEAKYWEEK.map = {
     enter: function() {
         this.collisionTextures = [0,10,11,12];
-        this.collisionObjects = [1];
+        this.collisionObjects = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19];
         var that = this;
         this.map = this.scene;
         
@@ -224,8 +224,8 @@ LEAKYWEEK.map = {
             });
             var collisionEvs = 0;
             collisions.forEach(function(collision){
-                if(that.collisionTextures.indexOf(collision.tile.f) === -1 ||
-                   (collision.tile.o && that.collisionObjects.indexOf(collision.tile.o)===-1)){
+                if(that.collisionTextures.indexOf(collision.tile.f) === -1 &&
+                   ((collision.tile.o && that.collisionObjects.indexOf(collision.tile.o)===-1)||!collision.tile.o)){
                     if(collision.tile.collisionEvent!== undefined && collision.tile.collisionEvent !== -1){
                         collisionEvs++;
                         if(collision.tile.collisionEvent !== that.lastCollisionEvent){
