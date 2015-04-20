@@ -245,8 +245,9 @@ LEAKYWEEK.map = {
                         .drawAtlasFrame(this.app.atlases.floor, tile.f, 0, 0);
                     
                     if(this.mapedit&&tile.selected){
+                        var a = this.collisionTextures.indexOf(tile.f)!==-1?0:255;
                         this.app.layer
-                            .fillStyle('rgba(255,255,255,0.2)')
+                            .fillStyle('rgba('+a+','+a+',255,0.2)')
                             .fillRect(0,0,ts,ts);
                     }
                     this.app.layer.restore();
