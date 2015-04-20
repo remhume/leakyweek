@@ -17,7 +17,7 @@ playground({
     smoothing: false,
     create: function(){
         this.loadImage("title", "shadyguy");
-        this.loadAtlas("floor", "player");
+        this.loadAtlas("floor", "player", "objects");
 
         //for(var k in LEAKYWEEK.SCENARIOS) {
         //    this.loadAtlas(LEAKYWEEK.SCENARIOS[k].thumbnail);
@@ -34,7 +34,7 @@ LEAKYWEEK.addScenario = function(s) {
     LEAKYWEEK.SCENARIOS[s.id] = s;
 }
 
-LEAKYWEEK.days = {};
+LEAKYWEEK.day = {};
 
 LEAKYWEEK.title = {
     enter: function(){
@@ -90,7 +90,8 @@ LEAKYWEEK.title = {
                     this.setSelectionY();
                     console.log("ping");
                 } else if((data.x >= this.app.width/2-70) && (data.x <= this.app.width/2-70+200) && (data.y >= this.app.height-110) && (data.y <= this.app.height-110+70)) {
-                    this.app.setState(LEAKYWEEK.SCENARIOS[this.selection]);
+                    PLAYGROUND.Transitions.enabled = false;
+                    this.app.setState(LEAKYWEEK.day);
                 }
             }
         }
@@ -114,7 +115,8 @@ LEAKYWEEK.title = {
                 break;
             case "enter":
             case "space":
-                this.app.setState(LEAKYWEEK.SCENARIOS[this.selection]);
+                PLAYGROUND.Transitions.enabled = false;
+                this.app.setState(LEAKYWEEK.day);
         }
     }
 };
@@ -149,7 +151,7 @@ LEAKYWEEK.conversation = {
                 this.shown = 0;
                 this.current++;
                 if(this.text.length === this.current){
-                    this.scene.callback.call(this);
+                    this.scene.callback.call(this.scene.parent);
                 }
             } else{
                 this.shown = 1;
@@ -161,7 +163,9 @@ LEAKYWEEK.conversation = {
 LEAKYWEEK.map = {
     enter: function() {
         this.collisionTextures = [0,10,11,12];
+        this.collisionObjects = [1];
         var that = this;
+        this.map = this.scene;
         this.map.entities.forEach(function(entity){
             entity.speed = 0;
             entity.direction = 0;
@@ -172,10 +176,19 @@ LEAKYWEEK.map = {
             x: 300 - this.map.entities[this.map.me].x,
             y: 450 - this.map.entities[this.map.me].y
         }
-        this.mapedit = true;
+        this.mapedit = false;
+        this.konami = {
+            code: ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'],
+            next: 0
+        }
         this.selectedFrame = 3;
+        this.selectedObject = 0;
     },
     step: function(dt) {
+        if(this.konami.next === this.konami.code.length){
+            this.konami.next = 0;
+            this.mapedit = !this.mapedit;
+        }
         for(var i = 0; i < this.map.entities.length; i++){
             var entity = this.map.entities[i];
             entity.x += Math.sin(entity.direction/2*Math.PI)*entity.speed*entity.maxSpeed*dt;
@@ -201,9 +214,10 @@ LEAKYWEEK.map = {
                 });
             });
             collisions.forEach(function(collision){
-                if(that.collisionTextures.indexOf(collision.tile.f) === -1){
+                if(that.collisionTextures.indexOf(collision.tile.f) === -1 ||
+                   (collision.tile.o && that.collisionObjects.indexOf(collision.tile.o)===-1)){
                     if(collision.tile.collisionEvent)
-                        collision.tile.collisionEvent.call(that);
+                        collision.tile.collisionEvent.call(that.map.parent);
                     return;
                 }
                 
@@ -244,8 +258,12 @@ LEAKYWEEK.map = {
                     this.app.layer.stars(j*ts+ox, i*ts+oy, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
                         .drawAtlasFrame(this.app.atlases.floor, tile.f, 0, 0);
                     
+                    if(tile.o){
+                        this.app.layer.drawAtlasFrame(this.app.atlases.objects, tile.o, 0, 0);
+                    }
+                    
                     if(this.mapedit&&tile.selected){
-                        var a = this.collisionTextures.indexOf(tile.f)!==-1?0:255;
+                        var a = this.collisionTextures.indexOf(tile.f)!== -1||(tile.o && this.collisionObjects.indexOf(tile.o)!==-1)?0:255;
                         this.app.layer
                             .fillStyle('rgba('+a+','+a+',255,0.2)')
                             .fillRect(0,0,ts,ts);
@@ -261,6 +279,26 @@ LEAKYWEEK.map = {
                 .drawAtlasFrame(this.app.atlases[entity.atlas], entity.current, 0, 0)
                 .restore();
         }
+        if(this.mapedit){
+            var text = ['mapedit mode',
+                        'i,j,k,l: make map bigger to the top, left, down, right',
+                        'shift+i,j,k,l: make map smaller to the top, left, down, right',
+                        'shift + lclick: select/unselect tile',
+                        'lclick: change selected tiles to previous texture',
+                        'rclick: change selected tiles to next texture',
+                        'wheelclick: rotate the texture of selected tiles',
+                        'o: scroll through objects on selected tiles',
+                        'period: unselect all textures',
+                        'konamicode: leave mapedit mode'];
+            this.app.layer
+                .fillStyle('#f0f0f0')
+                .font("12px Monospace")
+                .textAlign("left");
+            for(var i = 0; i < text.length; i++){
+                this.app.layer
+                    .fillText(text[i], 0, 40+15*i)
+            }
+        }
     },
     mousedown: function(event) {
         if(this.mapedit){
@@ -275,18 +313,20 @@ LEAKYWEEK.map = {
                 if((event.x >= j*ts+ox-ts/2) && (event.x <= j*ts+ox+ts/2) && (event.y >= i*ts+oy-ts/2) && (event.y <= i*ts+oy+ts/2)) {
                     if(this.app.keyboard.keys.shift){
                         tile.selected = !tile.selected;
-                        if(tile.selected) this.selectedFrame = tile.f;
+                        if(tile.selected) {
+                            this.selectedFrame = tile.f;
+                            this.selectedObject = tile.o||0;
+                        }
                     } else{
-                        tile.selected = true;
-                        var before = tile.f;
+                        var before = this.selectedFrame;
                         for(var k = 0; k < map.floor.length; k++){
                             for(var l = 0; l < map.floor[k].length; l++){
                                 itile = map.floor[k][l];
                                 if(itile.selected){
                                     if(event.button === 'left' && itile.f < this.app.atlases.floor.frames.length-1){
-                                        itile.f = before +1;
+                                        itile.f = this.selectedFrame = before +1;
                                     } else if(event.button === 'right' && itile.f > 0){
-                                        itile.f = before -1;
+                                        itile.f = this.selectedFrame = before -1;
                                     } else if(event.button === 'middle'){
                                         itile.rotation = itile.rotation === 3? 0 : itile.rotation+1 || 1;
                                     }
@@ -370,6 +410,22 @@ LEAKYWEEK.map = {
                     }
                 }
                 break;
+            case "o":
+                var map = this.map,
+                    tile;
+                if(this.mapedit){
+                    this.selectedObject++;
+                    if(this.selectedObject === this.app.atlases.objects.frames.length) this.selectedObject = 0;
+                    for(var i = 0; i < map.floor.length; i++){
+                        for(var j = 0; j < map.floor[i].length; j++){
+                            tile = map.floor[i][j];
+                            if(tile.selected){
+                                tile.o = this.selectedObject;
+                                
+                            }
+                        }
+                    }
+                }
         }
         switch(event.key){
             case "up":
@@ -377,6 +433,11 @@ LEAKYWEEK.map = {
             case "left":
             case "right":
                 this.map.entities[this.map.me].speed = 1
+        }
+        if(event.key === this.konami.code[this.konami.next]){
+            this.konami.next++;
+        } else{
+            this.konami.next = 0;
         }
     },
     keyup: function(event){
@@ -392,9 +453,46 @@ LEAKYWEEK.map = {
                 for(var j = 0; j < this.map.floor[i].length; j++){
                     this.map.floor[i][j].selected = undefined;
                     if(this.map.floor[i][j].rotation === 0) this.map.floor[i][j].rotation = undefined;
+                    if(this.map.floor[i][j].o === 0) this.map.floor[i][j].o = undefined;
                 }
             }
         }
         console.log(JSON.stringify(LEAKYWEEK.map.map.floor));
     }
 };
+
+LEAKYWEEK.dayintro = {
+    enter: function(){
+        this.scene;
+        this.bgVis = 0;
+        this.titleVis = 0;
+        this.textVis = 0;
+        this.app.tween(this)
+            .to({bgVis : 1}, 3);
+        this.app.tween(this)
+            .wait(2)
+            .to({titleVis: 1}, 3);
+        this.app.tween(this)
+            .wait(4)
+            .to({textVis: 1}, 3);
+    },
+    render: function(){
+        if(this.scene.screenshot)this.app.layer.drawImage(this.scene.screenshot, 0, 0);
+        this.app.layer
+            .clear('rgba(0,0,0,'+this.bgVis+')')
+            .fillStyle('rgba(220,220,220,'+this.titleVis+')')
+            .font('40px Monospace')
+            .textAlign('center')
+            .fillText(this.scene.title, this.app.width/2, 100)
+            .fillStyle('rgba(220,220,220,'+this.textVis+')')
+            .font('20px Monospace')
+            .textAlign('center')
+            .wrappedText(this.scene.text, this.app.width/2, 300, 600, 40)
+            
+    },
+    keydown: function(event){
+        if(event.key === 'space' || event.key === 'enter'){
+            this.scene.callback.call(this.scene.parent);
+        }
+    }
+}

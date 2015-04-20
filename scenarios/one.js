@@ -19,7 +19,6 @@ LEAKYWEEK.addScenario({
                 [{f:12},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f:12}],
                 [{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12}]
             ],
-            objects: [],
             entities: [
                 {
                     startX: 10,
@@ -42,17 +41,17 @@ LEAKYWEEK.addScenario({
             image: 'shadyguy'
         }
     },
-    "enter": function(){
+    "dayintros": {
+        "monday": {
+            title: '-monday-',
+            text: "It's early morning. As you're walking to your workplace a stranger appears in a dark side alley and starts talking to you with a deep voice."
+        }
+    },
+    "init": function(){
         this.maps.monday.floor[3][5].collisionEvent = function(){
             LEAKYWEEK.conversation.scene = LEAKYWEEK.SCENARIOS[LEAKYWEEK.title.selection].conversations.monday;
             LEAKYWEEK.conversation.scene.screenshot = this.app.layer.cache();
             this.app.setState(LEAKYWEEK.conversation);
         }
-        this.conversations.monday.callback = function() {
-            this.app.setState(LEAKYWEEK.SCENARIOS[LEAKYWEEK.title.selection]);
-        }
-        PLAYGROUND.Transitions.enabled = false;
-        LEAKYWEEK.map.map = this.maps.monday;
-        this.app.setState(LEAKYWEEK.map);
     }
 });

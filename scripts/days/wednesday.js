@@ -1,3 +1,0 @@
-LEAKYWEEK.days.wednesday = {
-    
-}
