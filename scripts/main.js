@@ -206,10 +206,10 @@ LEAKYWEEK.map = {
             
             var that = this;
             var ts = this.map.tileSize,
-                ex1 = entity.x,
-                ex2 = entity.x+ts,
-                ey1 = entity.y,
-                ey2 = entity.y+ts;
+                ex1 = entity.x+6,
+                ex2 = entity.x+ts-6,
+                ey1 = entity.y+10,
+                ey2 = entity.y+ts-10;
             var collisions = [];
             this.map.floor.forEach(function(row, y){
                 row.forEach(function(tile, x){
@@ -239,16 +239,16 @@ LEAKYWEEK.map = {
                 //kinda assuming there are no directions in between (oh god please)
                 switch(entity.direction|0){
                     case 0:
-                        entity.y = collision.y*ts+ts;
+                        entity.y = collision.y*ts+ts-10;
                         break;
                     case 1:
-                        entity.x = collision.x*ts-ts;
+                        entity.x = collision.x*ts-ts+6;
                         break;
                     case 2:
-                        entity.y = collision.y*ts-ts;
+                        entity.y = collision.y*ts-ts+10;
                         break;
                     case 3:
-                        entity.x = collision.x*ts+ts
+                        entity.x = collision.x*ts+ts-6;
                         break;
                 }
             });
@@ -300,7 +300,7 @@ LEAKYWEEK.map = {
         }
         for(var k = 0; k < map.entities.length; k++){
             entity = map.entities[k];
-            this.app.layer.stars(entity.x+ox, entity.y+oy-10, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
+            this.app.layer.stars(entity.x+ox, entity.y+oy-13, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
                 .drawAtlasFrame(this.app.atlases[entity.atlas], entity.current, 0, 0)
                 .restore();
         }
