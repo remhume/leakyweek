@@ -441,7 +441,7 @@ LEAKYWEEK.map = {
                     tile;
                 if(this.mapedit){
                     this.selectedObject++;
-                    if(this.selectedObject === this.app.atlases.objects.frames.length) this.selectedObject = -1;
+                    if(this.selectedObject === this.app.atlases.objects.frames.length) this.selectedObject = 0;
                     for(var i = 0; i < map.floor.length; i++){
                         for(var j = 0; j < map.floor[i].length; j++){
                             tile = map.floor[i][j];
