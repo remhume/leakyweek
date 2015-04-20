@@ -35,6 +35,24 @@
 			"frame": {"x":160,"y":0,"w":32,"h":32},
 			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 			"sourceSize": {"w":32,"h":32}
+		},
+		{
+			"filename": "objects.png",
+			"frame": {"x":192,"y":0,"w":32,"h":32},
+			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+			"sourceSize": {"w":32,"h":32}
+		},
+		{
+			"filename": "objects.png",
+			"frame": {"x":224,"y":0,"w":32,"h":32},
+			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+			"sourceSize": {"w":32,"h":32}
+		},
+		{
+			"filename": "objects.png",
+			"frame": {"x":224,"y":0,"w":32,"h":32},
+			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+			"sourceSize": {"w":32,"h":32}
 		}
     ]
 }
