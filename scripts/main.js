@@ -19,9 +19,9 @@ playground({
         this.loadImage("title", "shadyguy");
         this.loadAtlas("floor", "player");
 
-        for(var k in LEAKYWEEK.SCENARIOS) {
-            this.loadImage(LEAKYWEEK.SCENARIOS[k].thumbnail);
-        }
+        //for(var k in LEAKYWEEK.SCENARIOS) {
+        //    this.loadAtlas(LEAKYWEEK.SCENARIOS[k].thumbnail);
+        //}
     },
     ready: function(){
         this.setState(LEAKYWEEK.title);
@@ -45,19 +45,34 @@ LEAKYWEEK.title = {
         };
         this.selectionY = 275 + LEAKYWEEK.SCENARIOS[this.selection].id * 90;
     },
+    step: function(){
+        this.current = (this.app.lifetime % 2/2 * 4) | 0 + 4*2;
+    },
     render: function(){
         var title = this.app.images.title;
         this.app.layer.clear('#333')
             .drawImage(title, (this.app.width-title.width)/2, 0)
             .textAlign('left')
-            .fillStyle("#ff00ff")
-            .fillRect((this.app.width-200)/2, this.app.height-110, 200, 70);
+            .strokeStyle("#ff00ff")
+            .strokeRect(this.app.width/2-70, this.app.height-110, 200, 70)
+            .fillStyle('#fff')
+            .font("15pt Monospace")
+            .textAlign('center')
+            .fillText('start', this.app.width/2+30, this.app.height-70);
+        
+        if(this.hover){
+            this.app.layer
+                .fillStyle('rgba(255,255,255,0.1)')
+                .fillRect(this.app.width/2-70, this.app.height-110, 200, 70);
+        }
 
         this.app.layer.fillStyle("#666").fillRect((this.app.width-300)/2-10, this.selectionY, 400, 70);
         for(var i in LEAKYWEEK.SCENARIOS) {            
             var s = LEAKYWEEK.SCENARIOS[i];
             this.app.layer
-                  .drawImage(this.app.images[s.thumbnail], (this.app.width-300)/2, 285+s.id*90)
+                  .stars((this.app.width-300)/2, 278+s.id*90, 0, 0, 0, 2)
+                  .drawAtlasFrame(this.app.atlases[s.thumbnail], this.current, 0, 0)
+                  .restore()
                   .fillStyle("#f0f0f0")
                   .font("15pt Monospace")
                   .textAlign("left")
@@ -74,8 +89,17 @@ LEAKYWEEK.title = {
                     this.selection = index;
                     this.setSelectionY();
                     console.log("ping");
+                } else if((data.x >= this.app.width/2-70) && (data.x <= this.app.width/2-70+200) && (data.y >= this.app.height-110) && (data.y <= this.app.height-110+70)) {
+                    this.app.setState(LEAKYWEEK.SCENARIOS[this.selection]);
                 }
             }
+        }
+    },
+    mousemove: function(data) {
+        if((data.x >= this.app.width/2-70) && (data.x <= this.app.width/2-70+200) && (data.y >= this.app.height-110) && (data.y <= this.app.height-110+70)) {
+            this.hover = true;
+        } else{
+            this.hover = false;
         }
     },
     keydown: function(data) {
@@ -93,10 +117,6 @@ LEAKYWEEK.title = {
                 this.app.setState(LEAKYWEEK.SCENARIOS[this.selection]);
         }
     }
-};
-
-LEAKYWEEK.drawMap = function(){
-    
 };
 
 LEAKYWEEK.conversation = {
@@ -121,7 +141,7 @@ LEAKYWEEK.conversation = {
             .fillStyle("#f0f0f0")
             .font("20pt Monospace")
             .textAlign("left")
-            .wrappedText(this.currentText, 100, 440, 600, 40);
+            .wrappedText(this.currentText||' ', 100, 440, 600, 40);
     },
     keydown: function(event) {
         if(event.key === 'space' || event.key === 'enter'){

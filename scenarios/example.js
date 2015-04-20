@@ -1,9 +1,9 @@
 LEAKYWEEK.addScenario({
-    "title": "Example",
+    "title": "Paula Layer",
     "id": 0,
-    "description": "foo",
+    "description": "31, Working at a bank",
     "difficulty": "medium",
-    "thumbnail": "example",
+    "thumbnail": "player",
     "maps": {
         "monday": {
             tileSize: 32,
