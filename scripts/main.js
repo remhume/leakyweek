@@ -287,8 +287,6 @@ LEAKYWEEK.map = {
                                         itile.f = before +1;
                                     } else if(event.button === 'right' && itile.f > 0){
                                         itile.f = before -1;
-                                    } else if(event.button === 'right' && itile.f === 0){
-                                        itile.f = null;
                                     } else if(event.button === 'middle'){
                                         itile.rotation = itile.rotation === 3? 0 : itile.rotation+1 || 1;
                                     }
