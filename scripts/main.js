@@ -502,14 +502,22 @@ LEAKYWEEK.dayintro = {
         this.bgVis = 0;
         this.titleVis = 0;
         this.textVis = 0;
+        this.spaceVis = 0;
+        this.timelock = 5;
         this.app.tween(this)
             .to({bgVis : 1}, 3);
         this.app.tween(this)
             .wait(2)
             .to({titleVis: 1}, 3);
         this.app.tween(this)
-            .wait(4)
+            .wait(3)
             .to({textVis: 1}, 3);
+        this.app.tween(this)
+            .wait(5)
+            .to({spaceVis: 1}, 2);
+    },
+    step: function(dt){
+        this.timelock -= dt;
     },
     render: function(){
         if(this.scene.screenshot)this.app.layer.drawImage(this.scene.screenshot, 0, 0);
@@ -523,10 +531,14 @@ LEAKYWEEK.dayintro = {
             .font('20px Monospace')
             .textAlign('center')
             .wrappedText(this.scene.text, this.app.width/2, 300, 600, 40)
+            .fillStyle('rgba(220,220,220,'+this.spaceVis+')')
+            .font('14px Monospace')
+            .textAlign('center')
+            .fillText('press space to continue', this.app.width/2, this.app.height-15);
             
     },
     keydown: function(event){
-        if(event.key === 'space' || event.key === 'enter'){
+        if(this.timelock <= 0 && (event.key === 'space' || event.key === 'enter')){
             this.scene.callback.call(this.scene.parent);
         }
     }
