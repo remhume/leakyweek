@@ -51,7 +51,7 @@
 		{
 			"filename": "objects.png",
 			"frame": {"x":256,"y":0,"w":32,"h":32},
-			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+			"spriteSourceSize": {"x":0,"y":5,"w":32,"h":32},
 			"sourceSize": {"w":32,"h":32}
 		},
 		{
@@ -60,5 +60,5 @@
 			"spriteSourceSize": {"x":0,"y":5,"w":32,"h":32},
 			"sourceSize": {"w":32,"h":32}
 		}
-    ]
+    }
 }
