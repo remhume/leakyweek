@@ -10,7 +10,7 @@ LEAKYWEEK.addScenario({
             floor: [
                 [{f: 1},{f: 1},{f: 1},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12},{f:12}],
                 [{f: 1},{f: 1},{f: 1},{f:12},{f:10},{f:10},{f:10},{f:10},{f:10},{f:10},{f:10},{f:10},{f:10},{f:10},{f:12}],
-                [{f: 1},{f: 1},{f: 1},{f:12},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f:12}],
+                [{f: 1},{f: 1},{f: 1},{f:12},{f: 3, collisionEvent: 0},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f:12}],
                 [{f: 1},{f: 1},{f: 1},{f:12},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f: 3},{f:12}],
                 [{f:12},{f:12},{f:12},{f:12},{f: 3},{f: 4},{f: 4},{f: 4},{f: 4},{f: 4},{f: 4},{f: 3},{f: 3},{f: 3},{f:12}],
                 [{f:12},{f:10},{f:10},{f:10},{f: 3},{f: 4},{f: 4},{f: 4},{f: 4},{f: 4},{f: 4},{f: 3},{f: 3},{f: 3},{f:12}],
@@ -26,6 +26,16 @@ LEAKYWEEK.addScenario({
                     maxSpeed: 200,
                     f: 0,
                     atlas: 'player'
+                }
+            ],
+            collisionEvents: [
+                function(map){
+                    var scene = this.setup({text:['Test']}, "conversation", true);
+                    scene.callback = function(){
+                        var scene2 = this.setup(this.scenario.maps[this.day], "map");
+                        scene2.init();
+                    };
+                    scene.init();
                 }
             ],
             me: 0,
@@ -76,13 +86,6 @@ LEAKYWEEK.addScenario({
         "sunday": {
             title: "-sunday-",
             text: ""
-        }
-    },
-    "init": function(){
-        this.maps.monday.floor[3][5].collisionEvent = function(){
-            LEAKYWEEK.conversation.scene = LEAKYWEEK.SCENARIOS[LEAKYWEEK.title.selection].conversations.monday;
-            LEAKYWEEK.conversation.scene.screenshot = this.app.layer.cache();
-            this.app.setState(LEAKYWEEK.conversation);
         }
     }
 });
