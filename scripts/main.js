@@ -160,7 +160,7 @@ LEAKYWEEK.conversation = {
 
 LEAKYWEEK.map = {
     enter: function() {
-        this.collisionTextures = [8,9,10];
+        this.collisionTextures = [0,10,11,12];
         var that = this;
         this.map.entities.forEach(function(entity){
             entity.speed = 0;
@@ -172,6 +172,8 @@ LEAKYWEEK.map = {
             x: 300 - this.map.entities[this.map.me].x,
             y: 450 - this.map.entities[this.map.me].y
         }
+        this.mapedit = true;
+        this.selectedFrame = 3;
     },
     step: function(dt) {
         for(var i = 0; i < this.map.entities.length; i++){
@@ -240,21 +242,16 @@ LEAKYWEEK.map = {
                 tile = map.floor[i][j];
                 if(tile.f||tile.f===0){
                     this.app.layer.stars(j*ts+ox, i*ts+oy, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
-                        .drawAtlasFrame(this.app.atlases.floor, tile.f, 0, 0)
-                        .restore();
+                        .drawAtlasFrame(this.app.atlases.floor, tile.f, 0, 0);
+                    
+                    if(this.mapedit&&tile.selected){
+                        this.app.layer
+                            .fillStyle('rgba(255,255,255,0.2)')
+                            .fillRect(0,0,ts,ts);
+                    }
+                    this.app.layer.restore();
                 }
             
-            }
-        }
-        
-        for(var i = 0; i < map.objects.length; i++){
-            for(var j = 0; j < map.objects[i].length; j++){
-                tile = map.objects[i][j];
-                if(tile.f||tile.f===0){
-                    this.app.layer.stars(j*ts+ox, i*ts+oy, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
-                        .drawAtlasFrame(this.app.atlases.objects, tile.f, 0, 0)
-                        .restore();
-                }
             }
         }
         for(var k = 0; k < map.entities.length; k++){
@@ -262,6 +259,45 @@ LEAKYWEEK.map = {
             this.app.layer.stars(entity.x+ox, entity.y+oy, 0.5, 0.5, (entity.rotation||0) * Math.PI/2, 1)
                 .drawAtlasFrame(this.app.atlases[entity.atlas], entity.current, 0, 0)
                 .restore();
+        }
+    },
+    mousedown: function(event) {
+        if(this.mapedit){
+        var map = this.map;
+        var ts = map.tileSize;
+        var ox = this.offset.x;
+        var oy = this.offset.y;
+        var tile, itile;
+        for(var i = 0; i < map.floor.length; i++){
+            for(var j = 0; j < map.floor[i].length; j++){
+                tile = map.floor[i][j];
+                if((event.x >= j*ts+ox-ts/2) && (event.x <= j*ts+ox+ts/2) && (event.y >= i*ts+oy-ts/2) && (event.y <= i*ts+oy+ts/2)) {
+                    if(this.app.keyboard.keys.shift){
+                        tile.selected = !tile.selected;
+                        if(tile.selected) this.selectedFrame = tile.f;
+                    } else{
+                        tile.selected = true;
+                        var before = tile.f;
+                        for(var k = 0; k < map.floor.length; k++){
+                            for(var l = 0; l < map.floor[k].length; l++){
+                                itile = map.floor[k][l];
+                                if(itile.selected){
+                                    if(event.button === 'left' && itile.f < this.app.atlases.floor.frames.length-1){
+                                        itile.f = before +1;
+                                    } else if(event.button === 'right' && itile.f > 0){
+                                        itile.f = before -1;
+                                    } else if(event.button === 'right' && itile.f === 0){
+                                        itile.f = null;
+                                    } else if(event.button === 'middle'){
+                                        itile.rotation = itile.rotation === 3? 0 : itile.rotation+1 || 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         }
     },
     keydown: function(event){
@@ -278,6 +314,63 @@ LEAKYWEEK.map = {
             case "left":
                 this.map.entities[this.map.me].direction = 3;
                 break;
+            case "period":
+                if(this.mapedit){
+                    for(var i = 0; i < this.map.floor.length; i++){
+                        for(var j = 0; j < this.map.floor[i].length; j++){
+                            this.map.floor[i][j].selected = false;
+                        }
+                    }
+                }
+                break;
+            case "i":
+                if(this.mapedit){
+                    if(!this.app.keyboard.keys.shift){
+                        var newrow = [[]]
+                        for(var i = 0; i < this.map.floor[0].length; i++){
+                            newrow[0].push({f:this.selectedFrame});
+                        }
+                        this.map.floor = newrow.concat(this.map.floor); 
+                    } else{
+                        this.map.floor.shift();
+                    }
+                }
+                break;
+            case "k":
+                if(this.mapedit){
+                    if(!this.app.keyboard.keys.shift){
+                        var newrow = [[]]
+                        for(var i = 0; i < this.map.floor[0].length; i++){
+                            newrow[0].push({f:this.selectedFrame});
+                        }
+                        this.map.floor = this.map.floor.concat(newrow); 
+                    } else{
+                        this.map.floor.pop();
+                    }
+                }
+                break;
+            case "j":
+                if(this.mapedit){
+                    for(var i = 0; i < this.map.floor.length; i++){
+                        if(!this.app.keyboard.keys.shift){
+                            this.map.floor[i] = [{f: this.selectedFrame}].concat(this.map.floor[i]);
+                        } else{
+                            this.map.floor[i].shift();
+                        }
+                    }
+                }
+                break;
+            case "l":
+                if(this.mapedit){
+                    for(var i = 0; i < this.map.floor.length; i++){
+                        if(!this.app.keyboard.keys.shift){
+                            this.map.floor[i] = this.map.floor[i].concat([{f: this.selectedFrame}]);
+                        } else{
+                            this.map.floor[i].pop();
+                        }
+                    }
+                }
+                break;
         }
         switch(event.key){
             case "up":
@@ -293,5 +386,16 @@ LEAKYWEEK.map = {
         if(event.key === 'right' && me.direction===1) me.speed = 0;
         if(event.key === 'down' && me.direction===2) me.speed = 0;
         if(event.key === 'left' && me.direction===3) me.speed = 0;
+    },
+    export: function(){
+        if(this.mapedit){
+            for(var i = 0; i < this.map.floor.length; i++){
+                for(var j = 0; j < this.map.floor[i].length; j++){
+                    this.map.floor[i][j].selected = undefined;
+                    if(this.map.floor[i][j].rotation === 0) this.map.floor[i][j].rotation = undefined;
+                }
+            }
+        }
+        console.log(JSON.stringify(LEAKYWEEK.map.map.floor));
     }
 };
