@@ -15,8 +15,26 @@ LEAKYWEEK.day = {
                         this.app.setState(LEAKYWEEK.day);
                     }
                     scene2.init();
+                } else if(this.day === 'saturday'){
+                    this.day = this.days[this.days.indexOf(this.day)+1];
+                    this.app.setState(LEAKYWEEK.day);
+                } else if(this.day === 'sunday'){
+                    var scene2 = this.setup(this.scenario.conversations[this.day], "conversation");
+                    scene2.callback = function(){
+                        var scene3 = this.setup(this.scenario.dayintros.end, "dayintro");
+                        scene3.init();
+                    }
+                    scene2.init();
                 } else{
                     var scene2 = this.setup(this.scenario.maps[this.day], "map");
+                    scene2.callback = function(){
+                        var scene3 = this.setup(this.scenario.conversations[this.day], "conversation");
+                        scene3.callback = function(){
+                            this.day = this.days[this.days.indexOf(this.day)+1];
+                            this.app.setState(LEAKYWEEK.day);
+                        }
+                        scene3.init();
+                    }
                     scene2.init();
                 }
             }

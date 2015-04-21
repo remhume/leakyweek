@@ -18,6 +18,7 @@ playground({
     create: function(){
         this.loadImage("title", "shadyguy", "shadyletter");
         this.loadAtlas("floor", "player", "objects");
+        this.loadSounds("02Dcalage");
     },
     ready: function(){
         this.setState(LEAKYWEEK.title);
@@ -87,6 +88,8 @@ LEAKYWEEK.title = {
                     console.log("ping");
                 } else if((data.x >= this.app.width/2-70) && (data.x <= this.app.width/2-70+200) && (data.y >= this.app.height-110) && (data.y <= this.app.height-110+70)) {
                     PLAYGROUND.Transitions.enabled = false;
+                    var loop = this.app.music.play("02Dcalage", true);
+                    this.app.music.play("02Dcalage", loop);
                     this.app.setState(LEAKYWEEK.day);
                 }
             }
@@ -121,7 +124,7 @@ LEAKYWEEK.conversation = {
     enter: function() {
         this.image = this.app.images[this.scene.image];
         this.text = this.scene.text;
-        this.timing = this.scene.timing || 3;
+        this.timing = this.scene.timing || 2;
         this.current = 0;
         this.shown = 0;
     },
@@ -163,8 +166,8 @@ LEAKYWEEK.conversation = {
 
 LEAKYWEEK.map = {
     enter: function() {
-        this.collisionTextures = [0,10,11,12];
-        this.collisionObjects = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19];
+        this.collisionTextures = [0,10,11,12,13,15];
+        this.collisionObjects = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21];
         var that = this;
         this.map = this.scene;
         
@@ -225,7 +228,8 @@ LEAKYWEEK.map = {
             var collisionEvs = 0;
             collisions.forEach(function(collision){
                 if(that.collisionTextures.indexOf(collision.tile.f) === -1 &&
-                   ((collision.tile.o && that.collisionObjects.indexOf(collision.tile.o)===-1)||!collision.tile.o)){
+                   ((collision.tile.o && that.collisionObjects.indexOf(collision.tile.o)===-1)||!collision.tile.o)||
+                  (collision.tile.o && that.collisionObjects.indexOf(collision.tile.o)===-1)){
                     if(collision.tile.collisionEvent!== undefined && collision.tile.collisionEvent !== -1){
                         collisionEvs++;
                         if(collision.tile.collisionEvent !== that.lastCollisionEvent){
@@ -540,16 +544,19 @@ LEAKYWEEK.dayintro = {
             .fillStyle('rgba(220,220,220,'+this.textVis+')')
             .font('20px Monospace')
             .textAlign('center')
-            .wrappedText(this.scene.text, this.app.width/2, 300, 600, 40)
-            .fillStyle('rgba(220,220,220,'+this.spaceVis+')')
+            .wrappedText(this.scene.text, this.app.width/2, 300, 600, 40);
+        
+        if(this.scene.callback){
+            this.app.layer.fillStyle('rgba(220,220,220,'+this.spaceVis+')')
             .font('14px Monospace')
             .textAlign('center')
             .fillText('press space to continue', this.app.width/2, this.app.height-15);
+        }
             
     },
     keydown: function(event){
         if(this.timelock <= 0 && (event.key === 'space' || event.key === 'enter')){
-            this.scene.callback.call(this.scene.parent);
+            if(this.scene.callback) this.scene.callback.call(this.scene.parent);
         }
     }
 }
