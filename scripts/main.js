@@ -277,7 +277,7 @@ LEAKYWEEK.map = {
             for(var j = 0; j < map.floor[i].length; j++){
                 tile = map.floor[i][j];
                 if(tile.f||tile.f===0){
-                    this.app.layer.stars(j*ts+ox, i*ts+oy, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
+                    this.app.layer.stars(j*ts+ox|0, i*ts+oy|0, 0.5, 0.5, (tile.rotation||0) * Math.PI / 2, 1) 
                         .drawAtlasFrame(this.app.atlases.floor, tile.f, 0, 0);
                     
                     if(tile.o){
